@@ -14,9 +14,16 @@
 pip install bluepy azure-eventhub
 ```
 
+RASPBERRY PI LITEにインストールする場合、以下のコマンドを実行して下さい。
+
+```bash
+sudo apt-get install -y python3-pip git build-essential libglib2.0-dev
+sudo pip3 install bluepy azure-eventhub
+```
+
 ## 設定
 
-設定ファイル`config.ini`に以下の内容を記入してください。
+設定ファイル`config.ini`に以下の内容を記入してください。サンプルファイルは`config.ini.sample`です。
 
 ```ini
 [azure_eventhubs]
