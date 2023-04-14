@@ -1,0 +1,9 @@
+# Ignore everything by default
+*
+# Allow Dockerfile and docker-compose files
+!Dockerfile
+!docker-compose*.yml
+
+# Allow specific project folders and files
+!src/
+!requirements.txt
