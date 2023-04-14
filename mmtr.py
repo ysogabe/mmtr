@@ -94,13 +94,15 @@ class ScanDelegate(DefaultDelegate):
                         major = self.hex_to_little_endian_decimal(value[40:44])
                         minor = self.hex_to_little_endian_decimal(value[44:48])
                         tx = self.ibeacon_tx_power_to_dbm(value[48:50])
-                        print(f"uuid: {uuid}, major: {major}, minor: {minor}, tx: {tx}: RAW: {value}")
+                        print(f"uuid: {uuid}, major: {major}, minor: {minor}, tx: {tx}, RSSI: {dev.rssi}, RAW: {value}")
 
                         if uuid.lower() == MAMORIO_UUID.lower():
                             sender_thread = threading.Thread(target=self.send_to_eventhubs, args=(dev.addr, dev.rssi), daemon=True)
                             sender_thread.start()
+                            sender_thread.join()
         except Exception as e:
             print(f"Error occurred in handleDiscovery: {e}")
+            raise e
 
     def send_to_eventhubs(self, beacon_addr, rssi):
         """
@@ -161,8 +163,13 @@ def start_scanning():
     """
 
     scanner = Scanner().withDelegate(ScanDelegate())
-    while True:
-        devices = scanner.scan(5.0)
+    
+    try:
+        while True:
+            devices = scanner.scan(5.0)
+    except Exception as e:
+        print(f"Error occurred in start_scanning: {e}")
+        sys.exit()
 
         
 if __name__ == "__main__":
