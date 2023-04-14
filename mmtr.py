@@ -4,6 +4,7 @@ import os
 import configparser
 import signal
 import socket
+import json
 
 from time import sleep
 from datetime import datetime
@@ -93,7 +94,7 @@ class ScanDelegate(DefaultDelegate):
                         major = self.hex_to_little_endian_decimal(value[40:44])
                         minor = self.hex_to_little_endian_decimal(value[44:48])
                         tx = self.ibeacon_tx_power_to_dbm(value[48:50])
-                        print(f"uuid: {uuid}, major: {major}, minor: {minor}, tx: {tx}")
+                        print(f"uuid: {uuid}, major: {major}, minor: {minor}, tx: {tx}: RAW: {value}")
 
                         if uuid.lower() == MAMORIO_UUID.lower():
                             sender_thread = threading.Thread(target=self.send_to_eventhubs, args=(dev.addr, dev.rssi), daemon=True)
@@ -116,7 +117,15 @@ class ScanDelegate(DefaultDelegate):
             timestamp = datetime.utcnow().isoformat()
             host_name = socket.gethostname()
 
-            event_data = EventData(f"MAMORIO:{beacon_addr}, RSSI:{rssi}, Time:{timestamp}, Hostname:{host_name}")
+            # データをJSON形式に変換
+            data = {
+                "MAMORIO": beacon_addr,
+                "RSSI": rssi,
+                "Time": timestamp,
+                "Hostname": host_name
+            }
+
+            event_data = EventData(json.dumps(data))
             producer.send_batch([event_data])
         except Exception as e:
             print(f"Error occurred during sending to Event Hubs: {e}")
@@ -153,7 +162,7 @@ def start_scanning():
 
     scanner = Scanner().withDelegate(ScanDelegate())
     while True:
-        devices = scanner.scan(1.0)
+        devices = scanner.scan(5.0)
 
         
 if __name__ == "__main__":
