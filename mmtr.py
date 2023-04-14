@@ -92,37 +92,37 @@ class ScanDelegate(DefaultDelegate):
                         uuid = value[8:40]
                         major = self.hex_to_little_endian_decimal(value[40:44])
                         minor = self.hex_to_little_endian_decimal(value[44:48])
-                        tx = value[48:50]
+                        tx = self.ibeacon_tx_power_to_dbm(value[48:50])
+                        print(f"uuid: {uuid}, major: {major}, minor: {minor}, tx: {tx}")
 
                         if uuid.lower() == MAMORIO_UUID.lower():
-                            sender_thread = threading.Thread(target=send_to_eventhubs, args=(dev.addr, dev.rssi), daemon=True)
+                            sender_thread = threading.Thread(target=self.send_to_eventhubs, args=(dev.addr, dev.rssi), daemon=True)
                             sender_thread.start()
         except Exception as e:
             print(f"Error occurred in handleDiscovery: {e}")
 
-            
-def send_to_eventhubs(beacon_addr, rssi):
-    """
-    検出されたiBeaconのデータをAzure Event Hubsに送信します。追加のデータとして、送信時刻と送信ホスト名も含まれます。
+    def send_to_eventhubs(self, beacon_addr, rssi):
+        """
+        検出されたiBeaconのデータをAzure Event Hubsに送信します。追加のデータとして、送信時刻と送信ホスト名も含まれます。
 
-    :param beacon_addr: str, 検出されたビーコンのアドレス
-    :param rssi: int, 検出されたビーコンの信号強度（RSSI）
-    """
+        :param beacon_addr: str, 検出されたビーコンのアドレス
+        :param rssi: int, 検出されたビーコンの信号強度（RSSI）
+        """
 
-    try:
-        producer = EventHubProducerClient.from_connection_string(CONNECTION_STR, EVENTHUB_NAME)
+        try:
+            producer = EventHubProducerClient.from_connection_string(conn_str=CONNECTION_STR, eventhub_name=EVENTHUB_NAME)
 
-        # 現在の時刻とホスト名を取得
-        timestamp = datetime.utcnow().isoformat()
-        host_name = socket.gethostname()
+            # 現在の時刻とホスト名を取得
+            timestamp = datetime.utcnow().isoformat()
+            host_name = socket.gethostname()
 
-        event_data = EventData(f"MAMORIO:{beacon_addr}, RSSI:{rssi}, Time:{timestamp}, Hostname:{host_name}")
-        producer.send_batch([event_data])
-    except Exception as e:
-        print(f"Error occurred during sending to Event Hubs: {e}")
-    finally:
-        if 'producer' in locals():
-            producer.close()
+            event_data = EventData(f"MAMORIO:{beacon_addr}, RSSI:{rssi}, Time:{timestamp}, Hostname:{host_name}")
+            producer.send_batch([event_data])
+        except Exception as e:
+            print(f"Error occurred during sending to Event Hubs: {e}")
+        finally:
+            if 'producer' in locals():
+                producer.close()
 
             
 def signal_handler(sig, frame):
