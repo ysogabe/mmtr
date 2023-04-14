@@ -37,11 +37,34 @@ Azure Event Hubsの接続文字列とEvent Hub名を`<your_connection_string>`�
 ```bash
 sudo python mmtr.py
 ```
-
-
-
-
 プログラムはBLEデバイスをスキャンし、MAMORIOが検出されると、そのデータをAzure Event Hubsに送信します。
+
+## サービス登録（Systemd）
+
+Linuxシステムでは、 **Systemd** を利用してPythonスクリプトをデーモン化できます。まず、次のような新しいSystemdサービスファイルを作成してください(例：`/etc/systemd/system/mmtr.service`):
+
+```
+[Unit]
+Description=BLE MAMORIO Scanner and Azure Event Hubs Sender
+
+[Service]
+User=root
+WorkingDirectory=/path/to
+ExecStart=/usr/bin/python3 /path/to/mmtr.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+上記ファイルでパスやユーザー名を適切に指定し、Systemdに新しいサービスを読み込ませて起動します:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable mmtr.service
+sudo systemctl start mmtr.service
+```
+
 
 ## 注意事項
 
