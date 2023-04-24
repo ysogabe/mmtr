@@ -14,7 +14,7 @@ from azure.eventhub import EventHubProducerClient, EventData
 
 # 設定ファイルを読み込む
 config = configparser.ConfigParser()
-config.read("config.ini")
+config.read("src/config.ini")
 
 # Azure Event Hubs 接続情報
 CONNECTION_STR = os.environ.get(
@@ -155,7 +155,6 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)  # Ctrl+C用（キーボード割り込み）
 signal.signal(signal.SIGTERM, signal_handler)  # killコマンド用（終了要求）
 
-
 def start_scanning():
     """
     BLEデバイスの連続的なスキャンを開始します。
@@ -168,8 +167,7 @@ def start_scanning():
             devices = scanner.scan(5.0)
     except Exception as e:
         print(f"Error occurred in start_scanning: {e}")
-        sys.exit()
-
+        os.kill(os.getppid(), signal.SIGTERM)
         
 if __name__ == "__main__":
     # スキャニング用のスレッドを作成して実行
@@ -180,5 +178,5 @@ if __name__ == "__main__":
     try:
         while True:
             sleep(1)
-    except (KeyboardInterrupt, SystemExit):  # キーボード割り込みやシステム終了で終了処理
-        sys.exit()
+    except:  # キーボード割り込みやシステム終了で終了処理
+        sys.exit(1)
