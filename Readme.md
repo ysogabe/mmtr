@@ -72,6 +72,22 @@ sudo systemctl enable mmtr.service
 sudo systemctl start mmtr.service
 ```
 
+## Dockerでの実行
+
+このスクリプトではBLE（Bluetooth Low Energy）デバイスをスキャンするために、`bluepy`ライブラリを使用しています。`bluepy`ライブラリはLinux環境で動作し、一部の機能は特権ユーザー（rootユーザー）として実行する必要があります。
+
+したがって、dockerで実行する場合、`--privileged` オプションを用いてホスト側へのアクセスを許可する必要があります。以下に実行例を記載します。
+
+
+```bash
+docker run -d --net host --privileged --restart always -v ${PWD}/config.ini:/app/src/config.ini mmtr:0.0.7
+```
+
+なお、`--restart always` は`bluepy`ライブラリのエラー対策です。（調査中）
+
+```
+Error occurred in start_scanning: Failed to execute management command 'scan'
+```
 
 ## 注意事項
 
