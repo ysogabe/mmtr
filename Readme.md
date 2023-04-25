@@ -80,7 +80,7 @@ sudo systemctl start mmtr.service
 
 
 ```bash
-docker run -d --net host --privileged --restart always -v ${PWD}/config.ini:/app/src/config.ini mmtr:0.0.7
+docker run -d --net host --privileged --restart always -v ${PWD}/config.ini:/app/src/config.ini pptdxsoliag/mmtr:0.0.1
 ```
 
 なお、`--restart always` は`bluepy`ライブラリのエラー対策です。（調査中）
